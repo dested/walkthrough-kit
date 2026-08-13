@@ -45,6 +45,15 @@ Fill `walkthroughs/walkthrough.config.json`:
   the user for their key** (they can paste it via Other). If they decline, that's
   fine — the pipeline runs in captions mode (on-screen text, no narration).
   Write the key to `walkthroughs/.env`, never commit it.
+- **Voice — the user picks, you recommend. Never silently keep the default.**
+  With a key in place, run `cd walkthroughs && bun scripts/voices.ts` to list
+  the account's voices (labels, use cases, preview URLs). Pick the 2–3 best
+  fits for the chosen tone (sizzle → energetic/confident narration; demo →
+  confident conversational; sales → warm/persuasive; tutorial → calm/measured)
+  and AskUserQuestion with your top pick first marked "(Recommended)", each
+  option describing the voice in one line; Other lets them paste any voice_id.
+  Write the choice to `voiceId` in `walkthrough.config.json`. Skip only in
+  captions mode.
 - Capture login: if the app needs auth, put working credentials in
   `walkthroughs/.env` as `CAPTURE_EMAIL` / `CAPTURE_PASSWORD` (look for seed
   users in the repo; ask the user if unclear).

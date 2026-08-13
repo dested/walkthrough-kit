@@ -23,6 +23,9 @@
 - **Ports**: Remotion Studio 7811, renderer server 7812 (remotion.config.ts).
   Portless not used — Remotion's own tooling owns the server; uncommon ports per
   the no-3000 policy.
-- **Default voice**: ElevenLabs "Brian" (`nPczCjzI2devNBz1zQrb`); tone presets
+- **Voice is always user-chosen.** The skill lists the account's voices
+  (`scripts/voices.ts`), recommends 2–3 fits for the tone, and asks — it never
+  silently uses a default. "Brian" (`nPczCjzI2devNBz1zQrb`) in the shipped
+  config is only the pre-question placeholder. Tone presets
   (sizzle/demo/sales/tutorial) carry voice settings, wpm, lead/tail, music duck
   levels, and music prompts in `src/engine/tones.ts`.
