@@ -30,6 +30,16 @@ template/                    copied into a target repo as walkthroughs/
   videos/example/            reference walkthrough: every shot move, kit usage patterns
 ```
 
+## Versioning (bump protocol — every template-changing commit)
+
+`template/.kit-version` is a bare integer stamped into every scaffold; SKILL.md
+step 0 compares it against the skill's stated current version and routes stale
+repos through `skill/references/upgrades.md`. When you change the template:
+bump `template/.kit-version`, update the number in SKILL.md ("kit version N"),
+and add a changelog + migration entry to upgrades.md. The upgrade ownership
+map lives in upgrades.md — keep it true (user-owned: .env, config,
+src/videos.ts, videos/, public/, out/; everything else upstream-owned).
+
 ## Data flow (inside a target repo's walkthroughs/)
 
 script.ts (VO + shots + triggers) → capture.ts → public/<slug>/captures/*.png|webm

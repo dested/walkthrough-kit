@@ -9,12 +9,21 @@
 //
 // Run: bun scripts/doctor.ts [--sign-in-path=/sign-in]
 // Exit code = number of failed checks. Captions mode (no key) is a WARN, not a FAIL.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import puppeteer from 'puppeteer'
 import { credentialRoles, credentials } from '../capture/kit'
-import { argValue, elevenKey, readConfig } from './lib'
+import { ROOT, argValue, elevenKey, readConfig } from './lib'
 
 const config = readConfig()
 const SIGN_IN_PATH = argValue('sign-in-path') ?? '/sign-in'
+
+let kitVersion = '1 (pre-versioning)'
+try {
+  kitVersion = readFileSync(join(ROOT, '.kit-version'), 'utf8').trim()
+} catch {
+  /* scaffolded before versioning */
+}
 
 let fails = 0
 const pass = (msg: string) => console.log(`  PASS  ${msg}`)
@@ -24,7 +33,9 @@ const fail = (msg: string) => {
   console.log(`  FAIL  ${msg}`)
 }
 
-console.log(`doctor — ${config.product} @ ${config.baseUrl} (tone ${config.tone}, voice ${config.voiceId})\n`)
+console.log(
+  `doctor — ${config.product} @ ${config.baseUrl} (kit v${kitVersion}, tone ${config.tone}, voice ${config.voiceId})\n`,
+)
 
 // ── 1. baseUrl ────────────────────────────────────────────────────────────
 console.log('app server:')

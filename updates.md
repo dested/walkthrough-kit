@@ -1,5 +1,11 @@
 # Updates
 
+- 2026-08-12 — Kit versioning: template/.kit-version (integer, currently 3),
+  SKILL.md step-0 version check routes stale scaffolds through the new
+  skill/references/upgrades.md (ownership map + copy procedure + per-version
+  migration notes); doctor prints the repo's kit version; bump protocol in
+  cliffnotes.
+
 - 2026-08-12 — First-field-test feedback round: scripts/doctor.ts preflight
   (server identity, all credential sets, key + character usage, v3-ready
   voice); multi-role credentials (CAPTURE_EMAIL__ROLE + kit.signIn({as}));

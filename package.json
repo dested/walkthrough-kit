@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "description": "Prebaked Remotion walkthrough-video kit + the Claude Code skill that drives it",
   "private": true,
-  "workspaces": [
-    "template"
-  ],
   "scripts": {
     "install-skill": "bun scripts/install-skill.ts"
   }

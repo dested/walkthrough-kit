@@ -18,6 +18,16 @@ model the main thread is running. Spawn it with `model: "opus"` (Opus 5 is the
 recommended builder). Fable never does the film work itself unless the user
 explicitly asks for that.
 
+## 0. Version check (whenever `walkthroughs/` already exists)
+
+**This skill is kit version 3.** Read `walkthroughs/.kit-version` (a bare
+integer; file missing = version 1). If the repo's copy is older, upgrade it
+BEFORE any other work — old copies carry real bugs — by following
+`~/.claude/skills/walkthrough/references/upgrades.md` (ownership map, exact
+copy commands, per-version migration notes). If the repo's copy is NEWER than
+3, the installed skill is stale: reinstall it from the walkthrough-kit repo
+(`bun scripts/install-skill.ts`) and start over.
+
 ## 1. Scaffold (only if `walkthroughs/` doesn't exist at the repo root)
 
 ```bash
