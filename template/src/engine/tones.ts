@@ -1,13 +1,5 @@
 import type { ToneId } from './types'
 
-export type ToneVoice = {
-  stability: number
-  similarity_boost: number
-  style: number
-  use_speaker_boost: boolean
-  speed: number
-}
-
 export type Tone = {
   id: ToneId
   label: string
@@ -17,7 +9,12 @@ export type Tone = {
   leadSeconds: number
   /** Hold after the VO ends, so the shot lands before we move on. */
   tailSeconds: number
-  voice: ToneVoice
+  /**
+   * TTS is always eleven_v3, whose stability is discrete (0.0 creative /
+   * 0.5 natural / 1.0 robust). Expressive tones roll one Creative take for
+   * upside; measured tones stay Natural-only.
+   */
+  expressive: boolean
   /** Music volume while the narrator is talking / between lines. */
   duckVo: number
   duckOpen: number
@@ -32,7 +29,7 @@ export const TONES: Record<ToneId, Tone> = {
     wpm: 175,
     leadSeconds: 0.35,
     tailSeconds: 0.25,
-    voice: { stability: 0.3, similarity_boost: 0.85, style: 0.6, use_speaker_boost: true, speed: 1.05 },
+    expressive: true,
     duckVo: 0.3,
     duckOpen: 0.55,
     musicPrompt:
@@ -44,7 +41,7 @@ export const TONES: Record<ToneId, Tone> = {
     wpm: 155,
     leadSeconds: 0.55,
     tailSeconds: 0.4,
-    voice: { stability: 0.38, similarity_boost: 0.85, style: 0.5, use_speaker_boost: true, speed: 1 },
+    expressive: true,
     duckVo: 0.28,
     duckOpen: 0.5,
     musicPrompt:
@@ -56,7 +53,7 @@ export const TONES: Record<ToneId, Tone> = {
     wpm: 140,
     leadSeconds: 0.7,
     tailSeconds: 0.5,
-    voice: { stability: 0.32, similarity_boost: 0.85, style: 0.62, use_speaker_boost: true, speed: 0.92 },
+    expressive: true,
     duckVo: 0.26,
     duckOpen: 0.48,
     musicPrompt:
@@ -68,7 +65,7 @@ export const TONES: Record<ToneId, Tone> = {
     wpm: 135,
     leadSeconds: 0.8,
     tailSeconds: 0.6,
-    voice: { stability: 0.5, similarity_boost: 0.85, style: 0.35, use_speaker_boost: true, speed: 0.9 },
+    expressive: false,
     duckVo: 0.22,
     duckOpen: 0.4,
     musicPrompt:

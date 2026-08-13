@@ -16,13 +16,23 @@
   tone wpm and narration renders as bottom-center caption chips (lower-third
   moves top-left to make room). Voiced mode measures mp3s and word-syncs shots
   via the alignment JSON.
-- **Fable orchestrates, Opus builds.** SKILL.md keeps scaffold/config/questions
-  in the main thread and hands the film to a single `model: "opus"` agent.
+- **The film is always built by a spawned agent.** SKILL.md keeps
+  scaffold/config/questions in the main thread and hands the film to a single
+  `model: "opus"` agent (Opus 5 recommended) — regardless of which model the
+  main thread runs. Fable never builds the film inline unless explicitly asked.
 - **strict TS, but no `noUncheckedIndexedAccess`** in the template tsconfig —
   the ported engine math is index-heavy and was shipped/proven as-is.
 - **Ports**: Remotion Studio 7811, renderer server 7812 (remotion.config.ts).
   Portless not used — Remotion's own tooling owns the server; uncommon ports per
   the no-3000 policy.
+- **TTS is always eleven_v3.** v3 reads far better than multilingual_v2 but has
+  no native timestamp alignment and rejects previous_text/next_text — so
+  voiceover.ts is the frozone v3 harness, ported: N takes per scene (Natural +
+  one Creative roll on expressive tones), scribe_v1 STT scoring (match %,
+  trailing-silence and pace guards), best take promoted with a synthetic
+  character alignment (scripts/align.ts). durations.ts is model-agnostic — the
+  synthetic alignment has the same shape as native. Voice recommendations come
+  only from voices flagged v3-ready (`high_quality_base_model_ids`).
 - **Voice is always user-chosen.** The skill lists the account's voices
   (`scripts/voices.ts`), recommends 2–3 fits for the tone, and asks — it never
   silently uses a default. "Brian" (`nPczCjzI2devNBz1zQrb`) in the shipped

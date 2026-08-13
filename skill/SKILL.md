@@ -12,9 +12,11 @@ clicks, page pans, live clips, word-synced shot cues, VO, music ducking,
 captions), a Puppeteer capture harness, and the ElevenLabs pipeline. A new film
 is only ever two files: `videos/<slug>/script.ts` and `videos/<slug>/capture.ts`.
 
-You (the main thread) do setup and delegation. An **Opus agent** does the
-film-making — never make the film in the main thread, and if you are running as
-Fable, subagents MUST be Opus (`model: "opus"`).
+You (the main thread) do setup and delegation only. The film-making ALWAYS
+happens in a spawned agent — never inline in the main thread, no matter which
+model the main thread is running. Spawn it with `model: "opus"` (Opus 5 is the
+recommended builder). Fable never does the film work itself unless the user
+explicitly asks for that.
 
 ## 1. Scaffold (only if `walkthroughs/` doesn't exist at the repo root)
 
@@ -47,20 +49,21 @@ Fill `walkthroughs/walkthrough.config.json`:
   Write the key to `walkthroughs/.env`, never commit it.
 - **Voice — the user picks, you recommend. Never silently keep the default.**
   With a key in place, run `cd walkthroughs && bun scripts/voices.ts` to list
-  the account's voices (labels, use cases, preview URLs). Pick the 2–3 best
-  fits for the chosen tone (sizzle → energetic/confident narration; demo →
-  confident conversational; sales → warm/persuasive; tutorial → calm/measured)
-  and AskUserQuestion with your top pick first marked "(Recommended)", each
-  option describing the voice in one line; Other lets them paste any voice_id.
-  Write the choice to `voiceId` in `walkthrough.config.json`. Skip only in
-  captions mode.
+  the account's voices (labels, use cases, preview URLs, v3 readiness). TTS is
+  always **eleven_v3**, so recommend ONLY voices the listing marks `v3-ready`.
+  Pick the 2–3 best fits for the chosen tone (sizzle → energetic/confident
+  narration; demo → confident conversational; sales → warm/persuasive;
+  tutorial → calm/measured) and AskUserQuestion with your top pick first marked
+  "(Recommended)", each option describing the voice in one line; Other lets
+  them paste any voice_id. Write the choice to `voiceId` in
+  `walkthrough.config.json`. Skip only in captions mode.
 - Capture login: if the app needs auth, put working credentials in
   `walkthroughs/.env` as `CAPTURE_EMAIL` / `CAPTURE_PASSWORD` (look for seed
   users in the repo; ask the user if unclear).
 
 ## 3. Delegate the film to an Opus agent
 
-Spawn ONE Opus agent (`model: "opus"`). Its prompt must include:
+Spawn ONE agent with `model: "opus"` (Opus 5). Its prompt must include:
 - The subject and any user direction (what to cover, target length, tone).
 - Repo root, `walkthroughs/` path, config baseUrl, where credentials live.
 - Instruction to read, before anything else:

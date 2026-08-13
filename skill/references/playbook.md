@@ -37,7 +37,12 @@ Read first: `walkthroughs/README.md`, `videos/example/script.ts`,
   data and re-shoot). Never ship a VO number the screen contradicts.
 
 ### 3. Audio + timings
-- `bun scripts/voiceover.ts <slug>` (skips cleanly to captions mode without a key)
+- `bun scripts/voiceover.ts <slug>` (skips cleanly to captions mode without a
+  key). TTS is always **eleven_v3**: each scene generates takes, STT-scores
+  them against the script, and keeps the best; the take report lands in
+  `out/vo-takes/<slug>/report.json`. If a kept take has issues (misread words,
+  weird pace), regenerate with `--force --only=<sceneId>` or promote a
+  different existing take with `--pick=<sceneId>:<takeN>`.
 - `bun scripts/durations.ts <slug>` — fix any `TRIGGER NOT FOUND` by making the
   trigger an exact substring of the vo, then re-run. Unresolved triggers degrade
   to even splits; a finished film has zero.

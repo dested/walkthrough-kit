@@ -1,5 +1,11 @@
 # Updates
 
+- 2026-08-12 — TTS pinned to eleven_v3 everywhere: voiceover.ts rewritten as
+  the takes → scribe_v1-score → promote harness (ported from frozone
+  v3-vo.mjs) with synthetic alignment via new scripts/align.ts; tone presets
+  swap v2 voice knobs for an `expressive` creative-roll flag; voices.ts marks
+  v3-ready voices and SKILL.md recommends only those.
+
 - 2026-08-12 — Repo made public. Voice selection reworked: new
   template/scripts/voices.ts lists account voices; SKILL.md now requires
   recommend-then-ask for the narrator (user always picks, never a silent

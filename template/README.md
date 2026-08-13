@@ -16,8 +16,9 @@ bun scripts/new-walkthrough.ts admin-portal "The admin portal"
 bun videos/admin-portal/capture.ts          # app must be running at config baseUrl
 
 # 3. Voiceover + timings (skips TTS gracefully without ELEVENLABS_API_KEY → captions mode)
-bun scripts/voices.ts                       # list account voices — pick voiceId in config first
-bun scripts/voiceover.ts admin-portal
+bun scripts/voices.ts                       # list account voices — pick a v3-ready voiceId in config first
+bun scripts/voiceover.ts admin-portal       # always eleven_v3: N takes/scene, STT-scored, best kept
+#   out/vo-takes/<slug>/report.json holds every take; --pick=<sceneId>:<takeN> to overrule
 bun scripts/durations.ts admin-portal
 bun scripts/music.ts admin-portal           # optional bed; re-run durations after
 
