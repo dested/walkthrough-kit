@@ -1,0 +1,71 @@
+---
+name: walkthrough
+description: Produce a narrated Remotion walkthrough video of a web app (screenshots via Puppeteer, ElevenLabs voiceover or captions, music bed). Use when the user asks to "make a walkthrough", "product video", "demo video", "sizzle reel", or "tour" of an app or a feature area. Scaffolds a walkthroughs/ directory from dested/walkthrough-kit on first use, then delegates the film-making to an Opus agent.
+---
+
+# walkthrough
+
+Make a walkthrough video of the current repo's app. The heavy machinery is
+prebaked in the `walkthroughs/` template (scaffolded from
+`dested/walkthrough-kit`): a Remotion engine (ken-burns stills, animated cursor
+clicks, page pans, live clips, word-synced shot cues, VO, music ducking,
+captions), a Puppeteer capture harness, and the ElevenLabs pipeline. A new film
+is only ever two files: `videos/<slug>/script.ts` and `videos/<slug>/capture.ts`.
+
+You (the main thread) do setup and delegation. An **Opus agent** does the
+film-making — never make the film in the main thread, and if you are running as
+Fable, subagents MUST be Opus (`model: "opus"`).
+
+## 1. Scaffold (only if `walkthroughs/` doesn't exist at the repo root)
+
+```bash
+gh repo clone dested/walkthrough-kit "$SCRATCH/walkthrough-kit" -- --depth 1
+cp -r "$SCRATCH/walkthrough-kit/template/." walkthroughs/     # includes dotfiles
+cd walkthroughs && bun install
+```
+
+Then, **ask the user** (AskUserQuestion) how to handle git — they said walkthroughs
+may be ignored, so ask, don't assume:
+- **Ignore assets only (recommended)** — commit `walkthroughs/` code; the template's
+  own `.gitignore` already excludes captures/vo/music/timings/out.
+- **Ignore everything** — add `walkthroughs/` to the repo root `.gitignore`.
+- **Commit everything** — remove the asset lines from `walkthroughs/.gitignore`.
+
+## 2. Configure (first run, or when something is missing)
+
+Fill `walkthroughs/walkthrough.config.json`:
+- `product` / `productUrl` — from the repo (cliffnotes, package.json, README).
+- `baseUrl` — the dev URL (portless `https://<name>.localhost`, or whatever the
+  repo's cliffnotes say). The app must actually be running before capture.
+- `brand` — pull accent colors from the app's Tailwind config / ui.md if easy.
+- `tone` — if not already set and the user didn't say, **ask** (AskUserQuestion):
+  `sizzle` (fast, punchy tech demo) · `demo` (confident product walkthrough) ·
+  `sales` (warm, persuasive pitch) · `tutorial` (calm explainer).
+- ElevenLabs: if `ELEVENLABS_API_KEY` isn't in env or `walkthroughs/.env`, **ask
+  the user for their key** (they can paste it via Other). If they decline, that's
+  fine — the pipeline runs in captions mode (on-screen text, no narration).
+  Write the key to `walkthroughs/.env`, never commit it.
+- Capture login: if the app needs auth, put working credentials in
+  `walkthroughs/.env` as `CAPTURE_EMAIL` / `CAPTURE_PASSWORD` (look for seed
+  users in the repo; ask the user if unclear).
+
+## 3. Delegate the film to an Opus agent
+
+Spawn ONE Opus agent (`model: "opus"`). Its prompt must include:
+- The subject and any user direction (what to cover, target length, tone).
+- Repo root, `walkthroughs/` path, config baseUrl, where credentials live.
+- Instruction to read, before anything else:
+  - `walkthroughs/README.md` and `walkthroughs/videos/example/` (script + capture)
+  - `~/.claude/skills/walkthrough/references/playbook.md` (the working loop)
+  - `~/.claude/skills/walkthrough/references/writing.md` (VO + scene grammar)
+  - `~/.claude/skills/walkthrough/references/capture.md` (capture kit API + framing tricks)
+- The definition of done: `out/<slug>.mp4` rendered, scene-midpoint stills
+  verified by actually reading them, capture FACTS consistent with the VO.
+
+While it runs, stay available to the user; relay progress when it completes.
+
+## 4. Deliver
+
+Send the user the mp4 (SendUserFile) with runtime + scene list. Offer the
+follow-ups that are now cheap: change a VO line (`--only=<sceneId>` re-TTS +
+re-render), add a music bed (`bun scripts/music.ts <slug>`), different tone.

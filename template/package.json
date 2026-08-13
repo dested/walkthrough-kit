@@ -1,0 +1,34 @@
+{
+  "name": "walkthroughs",
+  "version": "1.0.0",
+  "description": "Remotion walkthrough videos for this app (scaffolded from dested/walkthrough-kit)",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.482",
+    "@remotion/google-fonts": "4.0.482",
+    "@remotion/media": "4.0.482",
+    "mediabunny": "^1.49.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.482"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "puppeteer": "^25.2.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "dev": "remotion studio",
+    "new": "bun scripts/new-walkthrough.ts",
+    "vo": "bun scripts/voiceover.ts",
+    "durations": "bun scripts/durations.ts",
+    "music": "bun scripts/music.ts",
+    "typecheck": "tsc --noEmit",
+    "render": "remotion render"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

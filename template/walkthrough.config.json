@@ -1,0 +1,15 @@
+{
+  "product": "Your Product",
+  "productUrl": "yourproduct.com",
+  "baseUrl": "https://yourproduct.localhost",
+  "tone": "demo",
+  "voiceId": "nPczCjzI2devNBz1zQrb",
+  "captions": "auto",
+  "brand": {
+    "night": "#0A0B0E",
+    "nightSoft": "#12141A",
+    "paper": "#F4F2EE",
+    "accent": "#4C8DFF",
+    "accent2": "#22C8A8"
+  }
+}

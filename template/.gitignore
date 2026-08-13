@@ -1,0 +1,8 @@
+# If this walkthroughs/ directory is committed, the heavy generated assets are not.
+node_modules/
+out/
+.env
+public/*/captures/
+public/*/vo/
+public/*/music.mp3
+public/*/timings.json
