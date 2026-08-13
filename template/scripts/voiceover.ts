@@ -20,18 +20,24 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Scene } from '../src/engine/types'
 import { matchWords, scriptWords, sttWords, syntheticAlign, type ScriptWord, type SttWord } from './align'
-import { ROOT, argFlag, argValue, elevenKey, findWalkthrough, readConfig, toneFor } from './lib'
+import { spawnSync } from 'node:child_process'
+import { ROOT, argFlag, argValue, elevenKey, fetchRetry, findWalkthrough, readConfig, toneFor } from './lib'
 
 const wt = findWalkthrough(process.argv[2])
 const config = readConfig()
 const tone = toneFor(wt)
 const VOICE_ID = wt.voiceId ?? config.voiceId
 
+/** Chain durations — it's cheap, and the film is unrenderable without it. */
+function runDurations(): never {
+  const r = spawnSync(process.execPath, [join(ROOT, 'scripts', 'durations.ts'), wt.id], { stdio: 'inherit' })
+  process.exit(r.status ?? 0)
+}
+
 const KEY = elevenKey()
 if (!KEY) {
-  console.log('No ELEVENLABS_API_KEY (env or .env) — skipping TTS. The pipeline runs in captions mode;')
-  console.log('run `bun scripts/durations.ts ' + wt.id + '` to write estimated timings.')
-  process.exit(0)
+  console.log('No ELEVENLABS_API_KEY (env or .env) — skipping TTS. The pipeline runs in captions mode.')
+  runDurations()
 }
 
 const OUT = join(ROOT, 'public', wt.id, 'vo')
@@ -55,7 +61,7 @@ async function measure(file: string): Promise<number> {
 const stabilityFor = (i: number): number => (tone.expressive && TAKES > 1 && i === TAKES - 1 ? 0.0 : 0.5)
 
 async function tts(text: string, stability: number): Promise<Buffer> {
-  const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_44100_192`, {
+  const res = await fetchRetry(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_44100_192`, {
     method: 'POST',
     headers: { 'xi-api-key': KEY!, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -113,13 +119,16 @@ if (PICK) {
   const file = join(TAKES_DIR, id, `take-${n}.mp3`)
   const s = await scoreTake(scene, file)
   promote(scene, file, s)
-  console.log(`promoted ${id} take ${n} (${s.dur.toFixed(1)}s, ${(s.pct * 100).toFixed(0)}% match)`)
-  console.log(`next: bun scripts/durations.ts ${wt.id}  (then render)`)
-  process.exit(0)
+  console.log(`promoted ${id} take ${n} (${s.dur.toFixed(1)}s, ${(s.pct * 100).toFixed(0)}% match) — running durations…\n`)
+  runDurations()
 }
 
 // ── main: generate, score, pick ─────────────────────────────────────────────
-console.log(`voice ${VOICE_ID}, model eleven_v3, tone ${tone.id}, ${TAKES} take(s)/scene`)
+// v3 bills per character, per take — surface the spend up front.
+const totalChars = VOICED.reduce((a, s) => a + s.vo.length, 0)
+console.log(
+  `voice ${VOICE_ID}, model eleven_v3, tone ${tone.id}, ${TAKES} take(s)/scene — ${totalChars} chars/pass, ~${totalChars * TAKES} chars total`,
+)
 type TakeRow = { t: number; stability: number; dur: number; pct: number; ws: number; issues: string[] }
 const report: { scene: string; kept: number; takes: TakeRow[] }[] = []
 
@@ -135,7 +144,7 @@ for (const scene of VOICED) {
   const takes: (Score & { t: number; stability: number; file: string })[] = []
   for (let t = 0; t < TAKES; t++) {
     const stability = stabilityFor(t)
-    process.stdout.write(`${scene.id} take ${t} (${stability === 0 ? 'creative' : 'natural'}) … `)
+    process.stdout.write(`${scene.id} (${scene.vo.length} chars) take ${t} (${stability === 0 ? 'creative' : 'natural'}) … `)
     const buf = await tts(scene.vo, stability)
     const file = join(dir, `take-${t}.mp3`)
     writeFileSync(file, buf)
@@ -179,4 +188,5 @@ if (report.length) {
   console.log(`\nkept ${report.map((r) => `${r.scene}:${r.kept}`).join(' ')}`)
   console.log(`takes + report in out/vo-takes/${wt.id}/ — overrule with --pick=<sceneId>:<takeN>`)
 }
-console.log(`voiceover done. Now run: bun scripts/durations.ts ${wt.id}`)
+console.log('voiceover done — running durations…\n')
+runDurations()

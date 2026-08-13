@@ -47,8 +47,12 @@ async function measure(file: string): Promise<number> {
   return Number((await input.computeDuration()).toFixed(3))
 }
 
+/** eleven_v3 audio tags like [sighs] are spoken direction, not words — they
+ * never appear in captions and don't count toward duration estimates. */
+const stripTags = (s: string) => s.replace(/\[[^\]]*\]/g, ' ').replace(/\s{2,}/g, ' ')
+
 function estimateSeconds(vo: string): number {
-  const words = vo.split(/\s+/).filter(Boolean).length
+  const words = stripTags(vo).split(/\s+/).filter(Boolean).length
   return Number(((words / tone.wpm) * 60 + 0.35).toFixed(3))
 }
 
@@ -58,7 +62,9 @@ type Chunk = { text: string; fromChar: number; toChar: number }
 function splitLong(text: string, base: number, out: Chunk[]) {
   if (text.length <= 90) {
     const trimmed = text.trim()
-    if (trimmed) out.push({ text: trimmed, fromChar: base + text.indexOf(trimmed[0]), toChar: base + text.length })
+    // Char span stays raw (it indexes the alignment); display text drops tags.
+    const display = stripTags(trimmed).trim()
+    if (display) out.push({ text: display, fromChar: base + text.indexOf(trimmed[0]), toChar: base + text.length })
     return
   }
   // Split near the middle at a clause boundary; fall back to the middle space.
@@ -77,8 +83,8 @@ function splitLong(text: string, base: number, out: Chunk[]) {
     best = space === -1 ? -1 : space + 1
   }
   if (best <= 0 || best >= text.length) {
-    const trimmed = text.trim()
-    if (trimmed) out.push({ text: trimmed, fromChar: base, toChar: base + text.length })
+    const display = stripTags(text).trim()
+    if (display) out.push({ text: display, fromChar: base, toChar: base + text.length })
     return
   }
   splitLong(text.slice(0, best), base, out)

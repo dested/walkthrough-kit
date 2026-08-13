@@ -37,6 +37,11 @@ touch frame numbers.
   there" — those phrases are also your best triggers.
 - No marketing filler ("seamless", "powerful", "robust"). No feature-list
   monotone: vary rhythm, ask a question occasionally, answer it.
+- TTS is eleven_v3, which honors bracketed audio tags in the vo text —
+  `[sighs]`, `[laughs]`, `[whispers]`, `[excited]`. Use sparingly (a sales
+  film might earn one or two; a demo usually none). The pipeline strips tags
+  from captions and duration estimates automatically. Never put a tag inside
+  a trigger phrase, and never place a trigger's words straddling a tag.
 
 ## Tone deltas
 - **sizzle**: clipped fragments allowed. One idea per breath. Hard cuts, more

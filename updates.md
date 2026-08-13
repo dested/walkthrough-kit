@@ -1,5 +1,13 @@
 # Updates
 
+- 2026-08-12 — First-field-test feedback round: scripts/doctor.ts preflight
+  (server identity, all credential sets, key + character usage, v3-ready
+  voice); multi-role credentials (CAPTURE_EMAIL__ROLE + kit.signIn({as}));
+  voices.ts writes out/voices.html audition page (players + copy ids);
+  voiceover.ts chains durations, logs per-scene/total character counts;
+  fetchRetry backoff on TTS/STT; v3 audio tags stripped from captions and
+  estimates, documented in writing.md.
+
 - 2026-08-12 — TTS pinned to eleven_v3 everywhere: voiceover.ts rewritten as
   the takes → scribe_v1-score → promote harness (ported from frozone
   v3-vo.mjs) with synthetic alignment via new scripts/align.ts; tone presets

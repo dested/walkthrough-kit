@@ -22,6 +22,14 @@
   main thread runs. Fable never builds the film inline unless explicitly asked.
 - **strict TS, but no `noUncheckedIndexedAccess`** in the template tsconfig —
   the ported engine math is index-heavy and was shipped/proven as-is.
+- **Doctor before delegate.** `scripts/doctor.ts` is the deterministic
+  "ready to film" gate: server answers (title printed — the who-owns-this-port
+  check), every credential set signs in, key live, voice v3-ready. The skill
+  runs it before spawning the builder agent; exit code = failed checks.
+- **Credentials are role-suffixed env sets**, not a single principal:
+  CAPTURE_EMAIL[__ROLE]/CAPTURE_PASSWORD[__ROLE], consumed via
+  `kit.signIn({ as: 'role' })` — one film can switch principals (staff portal
+  scene, then client portal scene).
 - **Ports**: Remotion Studio 7811, renderer server 7812 (remotion.config.ts).
   Portless not used — Remotion's own tooling owns the server; uncommon ports per
   the no-3000 policy.

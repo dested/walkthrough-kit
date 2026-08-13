@@ -14,8 +14,10 @@ Read first: `walkthroughs/README.md`, `videos/example/script.ts`,
 ## The loop
 
 ### 0. Recon
+- `bun scripts/doctor.ts` — if anything FAILs (server, creds, key, voice),
+  fix or escalate before doing anything else.
 - Read the repo's `cliffnotes.md` (routes section) or router files to learn the
-  app's pages. Confirm the app responds at the config `baseUrl`.
+  app's pages.
 - Scaffold the film: `bun scripts/new-walkthrough.ts <slug> "Title"`.
 - Write a throwaway recon pass FIRST: a capture.ts that just signs in and
   `save()`s every candidate page. Run it, then **Read every PNG** (they are
@@ -37,15 +39,17 @@ Read first: `walkthroughs/README.md`, `videos/example/script.ts`,
   data and re-shoot). Never ship a VO number the screen contradicts.
 
 ### 3. Audio + timings
-- `bun scripts/voiceover.ts <slug>` (skips cleanly to captions mode without a
+- `bun scripts/voiceover.ts <slug>` (drops cleanly to captions mode without a
   key). TTS is always **eleven_v3**: each scene generates takes, STT-scores
   them against the script, and keeps the best; the take report lands in
   `out/vo-takes/<slug>/report.json`. If a kept take has issues (misread words,
   weird pace), regenerate with `--force --only=<sceneId>` or promote a
-  different existing take with `--pick=<sceneId>:<takeN>`.
-- `bun scripts/durations.ts <slug>` — fix any `TRIGGER NOT FOUND` by making the
-  trigger an exact substring of the vo, then re-run. Unresolved triggers degrade
-  to even splits; a finished film has zero.
+  different existing take with `--pick=<sceneId>:<takeN>`. It runs durations
+  automatically at the end.
+- In the durations output, fix any `TRIGGER NOT FOUND` by making the trigger an
+  exact substring of the vo, then re-run (`bun scripts/durations.ts <slug>`
+  standalone re-times without re-TTS). Unresolved triggers degrade to even
+  splits; a finished film has zero.
 - Optional: `bun scripts/music.ts <slug>` then re-run durations.
 
 ### 4. Verify by looking

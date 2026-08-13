@@ -32,6 +32,36 @@ export function readEnv(key: string): string | undefined {
   return undefined
 }
 
+/**
+ * Credentials for a principal. The default set is CAPTURE_EMAIL/_PASSWORD;
+ * named roles (a client portal user, an admin, …) live in suffixed sets:
+ * CAPTURE_EMAIL__CLIENT / CAPTURE_PASSWORD__CLIENT -> credentials('client').
+ */
+export function credentials(role?: string): { email: string; password: string } | null {
+  const suffix = role ? `__${role.toUpperCase().replace(/-/g, '_')}` : ''
+  const email = readEnv(`CAPTURE_EMAIL${suffix}`)
+  const password = readEnv(`CAPTURE_PASSWORD${suffix}`)
+  return email && password ? { email, password } : null
+}
+
+/** Every credential role present in env/.env: '' is the default set. */
+export function credentialRoles(): string[] {
+  const keys = new Set<string>(Object.keys(process.env))
+  const envPath = join(ROOT, '.env')
+  if (existsSync(envPath)) {
+    for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*\S/)
+      if (m) keys.add(m[1])
+    }
+  }
+  const roles = new Set<string>()
+  for (const k of keys) {
+    const m = k.match(/^CAPTURE_EMAIL(?:__([A-Z0-9_]+))?$/)
+    if (m) roles.add(m[1] ? m[1].toLowerCase() : '')
+  }
+  return [...roles].sort()
+}
+
 function configBaseUrl(): string {
   const raw: unknown = JSON.parse(readFileSync(join(ROOT, 'walkthrough.config.json'), 'utf8'))
   if (raw && typeof raw === 'object' && 'baseUrl' in raw && typeof raw.baseUrl === 'string') return raw.baseUrl
@@ -263,18 +293,32 @@ export async function createCapture(slug: string, options: CaptureOptions = {}) 
       offset,
     )
 
-  /** Standard email+password sign-in. Throws if still on the sign-in page after. */
+  /**
+   * Standard email+password sign-in. Throws if still on the sign-in page after.
+   * Pass explicit email/password, or `as: 'client'` to use the
+   * CAPTURE_EMAIL__CLIENT / CAPTURE_PASSWORD__CLIENT credential set (omit `as`
+   * for the default CAPTURE_EMAIL set).
+   */
   async function signIn(
     opts: {
       path?: string
-      email: string
-      password: string
+      email?: string
+      password?: string
+      as?: string
       emailSel?: string
       passwordSel?: string
       submitSel?: string
-    },
+    } = {},
     p: Page = page,
   ) {
+    const creds =
+      opts.email && opts.password
+        ? { email: opts.email, password: opts.password }
+        : credentials(opts.as)
+    if (!creds) {
+      const set = opts.as ? `CAPTURE_EMAIL__${opts.as.toUpperCase()}` : 'CAPTURE_EMAIL'
+      throw new Error(`signIn: no credentials — set ${set} (+ matching password) in .env`)
+    }
     const path = opts.path ?? '/sign-in'
     await p.goto(`${BASE}${path}`, { waitUntil: 'networkidle2' })
     if (!p.url().includes(path)) {
@@ -284,14 +328,14 @@ export async function createCapture(slug: string, options: CaptureOptions = {}) 
     const emailSel = opts.emailSel ?? 'input[type="email"]'
     const passwordSel = opts.passwordSel ?? 'input[type="password"]'
     await p.waitForSelector(emailSel, { timeout: 25000 })
-    await p.type(emailSel, opts.email, { delay: 8 })
-    await p.type(passwordSel, opts.password, { delay: 8 })
+    await p.type(emailSel, creds.email, { delay: 8 })
+    await p.type(passwordSel, creds.password, { delay: 8 })
     await Promise.all([
       p.click(opts.submitSel ?? 'button[type="submit"]'),
       p.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => {}),
     ])
     await sleep(3500)
-    if (p.url().includes(path)) throw new Error(`sign-in failed at ${path} as ${opts.email}`)
+    if (p.url().includes(path)) throw new Error(`sign-in failed at ${path} as ${creds.email}`)
     console.log('  signed in ->', p.url())
   }
 

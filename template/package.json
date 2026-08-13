@@ -22,6 +22,8 @@
   "scripts": {
     "dev": "remotion studio",
     "new": "bun scripts/new-walkthrough.ts",
+    "doctor": "bun scripts/doctor.ts",
+    "voices": "bun scripts/voices.ts",
     "vo": "bun scripts/voiceover.ts",
     "durations": "bun scripts/durations.ts",
     "music": "bun scripts/music.ts",

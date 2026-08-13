@@ -4,6 +4,7 @@
 // durations.ts needs for trigger cues and caption pages.
 import { readFileSync } from 'node:fs'
 import { extname } from 'node:path'
+import { fetchRetry } from './lib'
 
 export const norm = (s: string): string =>
   s
@@ -116,7 +117,7 @@ export async function sttWords(file: string, key: string): Promise<{ words: SttW
   form.append('model_id', 'scribe_v1')
   const type = MIME[extname(file).toLowerCase()] ?? 'audio/mpeg'
   form.append('file', new Blob([readFileSync(file)], { type }), `audio${extname(file)}`)
-  const res = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+  const res = await fetchRetry('https://api.elevenlabs.io/v1/speech-to-text', {
     method: 'POST',
     headers: { 'xi-api-key': key },
     body: form,

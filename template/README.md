@@ -9,18 +9,19 @@ captions) is prebaked — a new walkthrough is just a `script.ts` + a `capture.t
 
 ```bash
 bun install
+bun scripts/doctor.ts                       # preflight: server, creds, key, voice — fix FAILs first
 bun scripts/new-walkthrough.ts admin-portal "The admin portal"
 
 # 1. Write videos/admin-portal/script.ts   (scenes: VO + shots)
 # 2. Write videos/admin-portal/capture.ts  (produce every img/clip + cursor point)
 bun videos/admin-portal/capture.ts          # app must be running at config baseUrl
 
-# 3. Voiceover + timings (skips TTS gracefully without ELEVENLABS_API_KEY → captions mode)
-bun scripts/voices.ts                       # list account voices — pick a v3-ready voiceId in config first
+# 3. Voiceover (drops to captions mode without ELEVENLABS_API_KEY; runs durations itself)
+bun scripts/voices.ts                       # prints voices + writes out/voices.html to audition; pick v3-ready
 bun scripts/voiceover.ts admin-portal       # always eleven_v3: N takes/scene, STT-scored, best kept
 #   out/vo-takes/<slug>/report.json holds every take; --pick=<sceneId>:<takeN> to overrule
-bun scripts/durations.ts admin-portal
 bun scripts/music.ts admin-portal           # optional bed; re-run durations after
+bun scripts/durations.ts admin-portal       # standalone re-time (no re-TTS) after script/music edits
 
 # 4. Preview / render
 bun run dev                                 # Remotion Studio (port 7811)

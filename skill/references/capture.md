@@ -18,7 +18,9 @@ kit.point(key, img, finder, space?)  // record normalized cursor/zoom target; sp
 kit.clickFound(finder)               // click what a browser-side finder returns
 kit.readText(finder)                 // element innerText, squashed — feed kit.fact()
 kit.scrollTo(finder, offsetPx?)      // park an element offsetPx under the top edge
-kit.signIn({ email, password, path?, emailSel?, … })
+kit.signIn({ path?, emailSel?, … })  // default CAPTURE_EMAIL/_PASSWORD creds
+kit.signIn({ as: 'client' })         // named set: CAPTURE_EMAIL__CLIENT/_PASSWORD__CLIENT
+                                     // (or pass email/password explicitly)
 kit.recordClip('name.webm', async (p) => { …drive the page… })
 kit.newPage(viewport?, userAgent?)   // second tab: portal user, phone UA, …
 kit.fullyLoad()                      // scroll-thru to fire lazy loads, freeze animations

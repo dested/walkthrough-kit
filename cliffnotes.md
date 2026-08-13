@@ -21,8 +21,10 @@ template/                    copied into a target repo as walkthroughs/
   src/videos.ts              walkthrough registry (marker-maintained by new-walkthrough)
   src/Root.tsx               one Composition per walkthrough; calculateMetadata loads timings/manifest
   capture/kit.ts             Puppeteer harness: go/save/saveTall/point/clickFound/recordClip/signIn/…
-  scripts/                   voices.ts (list account voices for the pick), voiceover.ts
-                             (ElevenLabs TTS + alignment), durations.ts (timings.json:
+  scripts/                   doctor.ts (preflight: server/creds/key/voice), voices.ts (voice
+                             listing + out/voices.html audition page), voiceover.ts
+                             (eleven_v3 takes → scribe_v1 score → promote + synthetic align,
+                             chains durations), align.ts (LCS/STT alignment), durations.ts (timings.json:
                              measured or estimated durations, trigger cues, caption pages),
                              music.ts (ElevenLabs music bed), new-walkthrough.ts (scaffold + register)
   videos/example/            reference walkthrough: every shot move, kit usage patterns

@@ -38,7 +38,10 @@ may be ignored, so ask, don't assume:
 Fill `walkthroughs/walkthrough.config.json`:
 - `product` / `productUrl` — from the repo (cliffnotes, package.json, README).
 - `baseUrl` — the dev URL (portless `https://<name>.localhost`, or whatever the
-  repo's cliffnotes say). The app must actually be running before capture.
+  repo's cliffnotes say). The app must actually be running before capture —
+  and check WHOSE server answers there before starting one (a stale process
+  squatting the port responds too, and a fresh `bun dev` then dies with
+  EADDRINUSE while everything still "works" against the wrong build).
 - `brand` — pull accent colors from the app's Tailwind config / ui.md if easy.
 - `tone` — if not already set and the user didn't say, **ask** (AskUserQuestion):
   `sizzle` (fast, punchy tech demo) · `demo` (confident product walkthrough) ·
@@ -48,20 +51,39 @@ Fill `walkthroughs/walkthrough.config.json`:
   fine — the pipeline runs in captions mode (on-screen text, no narration).
   Write the key to `walkthroughs/.env`, never commit it.
 - **Voice — the user picks, you recommend. Never silently keep the default.**
-  With a key in place, run `cd walkthroughs && bun scripts/voices.ts` to list
-  the account's voices (labels, use cases, preview URLs, v3 readiness). TTS is
-  always **eleven_v3**, so recommend ONLY voices the listing marks `v3-ready`.
-  Pick the 2–3 best fits for the chosen tone (sizzle → energetic/confident
-  narration; demo → confident conversational; sales → warm/persuasive;
-  tutorial → calm/measured) and AskUserQuestion with your top pick first marked
-  "(Recommended)", each option describing the voice in one line; Other lets
-  them paste any voice_id. Write the choice to `voiceId` in
-  `walkthrough.config.json`. Skip only in captions mode.
+  With a key in place, run `cd walkthroughs && bun scripts/voices.ts` — it
+  prints the account's voices AND writes `out/voices.html`, a picker page with
+  audio players and click-to-copy ids. **Send that file to the user
+  (SendUserFile) so they can actually listen**, then AskUserQuestion. TTS is
+  always **eleven_v3**, so recommend ONLY voices marked `v3-ready`. Pick the
+  2–3 best fits for the chosen tone (sizzle → energetic/confident narration;
+  demo → confident conversational; sales → warm/persuasive; tutorial →
+  calm/measured), top pick first marked "(Recommended)", each option
+  describing the voice in one line; Other lets them paste any voice_id. Write
+  the choice to `voiceId` in `walkthrough.config.json`. Skip only in captions
+  mode.
+- Capture login(s): the default principal goes in `walkthroughs/.env` as
+  `CAPTURE_EMAIL` / `CAPTURE_PASSWORD`. If the film needs more than one
+  principal (staff portal + client portal, admin + member), add named sets —
+  `CAPTURE_EMAIL__CLIENT` / `CAPTURE_PASSWORD__CLIENT` — which capture scripts
+  use via `kit.signIn({ as: 'client' })`.
+
+## 3. Preflight — run the doctor before delegating
+
+```bash
+cd walkthroughs && bun scripts/doctor.ts   # [--sign-in-path=/login]
+```
+
+It verifies: baseUrl answers (and prints the page title so you can confirm
+it's the right server), every credential set signs in, the ElevenLabs key is
+live (with character usage), and the configured voice is v3-ready. Fix every
+FAIL before spawning the agent — it is the deterministic "ready to film"
+signal.
 - Capture login: if the app needs auth, put working credentials in
   `walkthroughs/.env` as `CAPTURE_EMAIL` / `CAPTURE_PASSWORD` (look for seed
   users in the repo; ask the user if unclear).
 
-## 3. Delegate the film to an Opus agent
+## 4. Delegate the film to an Opus agent
 
 Spawn ONE agent with `model: "opus"` (Opus 5). Its prompt must include:
 - The subject and any user direction (what to cover, target length, tone).
@@ -76,7 +98,7 @@ Spawn ONE agent with `model: "opus"` (Opus 5). Its prompt must include:
 
 While it runs, stay available to the user; relay progress when it completes.
 
-## 4. Deliver
+## 5. Deliver
 
 Send the user the mp4 (SendUserFile) with runtime + scene list. Offer the
 follow-ups that are now cheap: change a VO line (`--only=<sceneId>` re-TTS +

@@ -63,6 +63,30 @@ export function elevenKey(): string | null {
   return null
 }
 
+/**
+ * fetch with backoff on 429/5xx/network errors — one transient hiccup must not
+ * kill an 18-scene batch. Non-retryable statuses return immediately.
+ */
+export async function fetchRetry(url: string, init: RequestInit, tries = 3): Promise<Response> {
+  let last: Response | Error = new Error('unreachable')
+  for (let i = 0; i < tries; i++) {
+    try {
+      const res = await fetch(url, init)
+      if (res.ok || (res.status !== 429 && res.status < 500)) return res
+      last = res
+    } catch (e) {
+      last = e instanceof Error ? e : new Error(String(e))
+    }
+    if (i < tries - 1) {
+      const wait = 1500 * (i + 1) * (i + 1)
+      console.warn(`  retry in ${wait / 1000}s (${last instanceof Response ? `HTTP ${last.status}` : last.message})`)
+      await new Promise((r) => setTimeout(r, wait))
+    }
+  }
+  if (last instanceof Response) return last
+  throw last
+}
+
 export function argFlag(name: string): boolean {
   return process.argv.includes(`--${name}`)
 }
