@@ -1,6 +1,6 @@
-// Per-scene narration with **eleven_v3** — always v3; multilingual_v2 is not
-// used in this kit. v3 reads with far better prosody but has no native
-// timestamp alignment and rejects previous_text/next_text, so every take is
+// Per-scene narration with **eleven_v4_turbo**, the only TTS model this kit
+// uses (v3 and multilingual_v2 are retired). The pipeline was built for v3, which
+// had no native timestamp alignment, and the takes harness stays: every take is
 // round-tripped through scribe_v1 STT and the winner gets a synthetic
 // alignment (align.ts) — which is all durations.ts needs.
 //
@@ -56,9 +56,10 @@ async function measure(file: string): Promise<number> {
   return Number((await input.computeDuration()).toFixed(3))
 }
 
-// v3 stability is discrete: 0.0 creative / 0.5 natural / 1.0 robust. Natural
-// first (dependable); expressive tones roll one Creative take for upside.
-const stabilityFor = (i: number): number => (tone.expressive && TAKES > 1 && i === TAKES - 1 ? 0.0 : 0.5)
+// Every voiceover is ElevenLabs Eleven v4 Turbo (decisions.md in the kit repo).
+// Natural stability first; expressive tones roll one looser take.
+const TTS_MODEL = 'eleven_v4_turbo'
+const stabilityFor = (i: number): number => (tone.expressive && TAKES > 1 && i === TAKES - 1 ? 0.3 : 0.5)
 
 async function tts(text: string, stability: number): Promise<Buffer> {
   const res = await fetchRetry(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_44100_192`, {
@@ -66,7 +67,7 @@ async function tts(text: string, stability: number): Promise<Buffer> {
     headers: { 'xi-api-key': KEY!, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       text,
-      model_id: 'eleven_v3',
+      model_id: TTS_MODEL,
       voice_settings: { stability, similarity_boost: 0.85, use_speaker_boost: true },
     }),
   })
@@ -124,10 +125,10 @@ if (PICK) {
 }
 
 // ── main: generate, score, pick ─────────────────────────────────────────────
-// v3 bills per character, per take — surface the spend up front.
+// TTS bills per character, per take — surface the spend up front.
 const totalChars = VOICED.reduce((a, s) => a + s.vo.length, 0)
 console.log(
-  `voice ${VOICE_ID}, model eleven_v3, tone ${tone.id}, ${TAKES} take(s)/scene — ${totalChars} chars/pass, ~${totalChars * TAKES} chars total`,
+  `voice ${VOICE_ID}, model ${TTS_MODEL}, tone ${tone.id}, ${TAKES} take(s)/scene — ${totalChars} chars/pass, ~${totalChars * TAKES} chars total`,
 )
 type TakeRow = { t: number; stability: number; dur: number; pct: number; ws: number; issues: string[] }
 const report: { scene: string; kept: number; takes: TakeRow[] }[] = []

@@ -3,9 +3,9 @@ import { AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame
 import { Audio as MediaAudio } from '@remotion/media'
 import { C, CONFIG } from '../theme'
 import { sceneFade } from '../lib/anim'
-import { Backdrop, Finish } from './Backdrop'
+import { Backdrop } from './Backdrop'
 import { Captions } from './Captions'
-import { ColdOpen, OutroCard, Wordmark } from './Cards'
+import { ColdOpen, OutroCard } from './Cards'
 import { ScreenScene } from './ScreenScene'
 import { EMPTY_MANIFEST, EMPTY_TIMINGS, type CaptureManifest, type Timings, type Walkthrough } from './types'
 import { OVERLAP, buildTimeline, coldOpenFrames, sceneOffset, toneOf } from './timeline'
@@ -19,37 +19,6 @@ export type FilmProps = {
 const FadeWrap: React.FC<{ dur: number; children: React.ReactNode }> = ({ dur, children }) => {
   const frame = useCurrentFrame()
   return <AbsoluteFill style={{ opacity: sceneFade(frame, dur, OVERLAP) }}>{children}</AbsoluteFill>
-}
-
-/**
- * Quiet brand mark, top-right, in a dark chip so it survives light screenshots.
- * On once the cold open clears, off for the outro card.
- */
-const BrandBadge: React.FC<{ from: number; until: number }> = ({ from, until }) => {
-  const frame = useCurrentFrame()
-  const opacity = interpolate(frame, [from, from + 24, until - 20, until], [0, 0.92, 0.92, 0], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  })
-  if (opacity <= 0) return null
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 42,
-        right: 54,
-        padding: '13px 22px 14px',
-        borderRadius: 14,
-        background: C.glass,
-        border: `1px solid ${C.rim}`,
-        boxShadow: '0 18px 46px rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(10px)',
-        opacity,
-      }}
-    >
-      <Wordmark fontSize={22} color={C.paper} />
-    </div>
-  )
 }
 
 /** The final settle to black. */
@@ -85,8 +54,6 @@ export const WalkthroughFilm: React.FC<FilmProps> = ({
         .filter((b) => durations[b.scene.id] != null)
         .map((b) => [offset + b.from + b.voStart, offset + b.from + b.voStart + b.voDur])
     : []
-
-  const outro = beats.find((b) => b.scene.card === 'outro')
 
   return (
     <AbsoluteFill style={{ backgroundColor: C.night }}>
@@ -135,9 +102,8 @@ export const WalkthroughFilm: React.FC<FilmProps> = ({
         <MusicBed wt={wt} bedSeconds={timings.bedSeconds} spans={voSpans} total={end} />
       ) : null}
 
-      <BrandBadge from={cold - 18} until={outro ? offset + outro.from + OVERLAP : end} />
-
-      <Finish />
+      {/* Nothing film-level sits over the screens: no brand badge, grain or
+          vignette. The wordmark lives on the cold open and the outro card. */}
       <FadeOut total={end} />
     </AbsoluteFill>
   )

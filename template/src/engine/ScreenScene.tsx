@@ -6,6 +6,8 @@ import { SMOOTH } from '../lib/anim'
 import { hasCaptures, imageDims } from './data'
 import type { CaptureManifest, Scene } from './types'
 import {
+  CHIP_MARGIN,
+  chipWindow,
   fallbackDims,
   fadeFrames,
   groupOfShot,
@@ -103,7 +105,8 @@ const ShotLayer: React.FC<{
 }
 
 /** Glass chip, bottom-left (top-left when captions own the bottom edge):
- * what we're looking at. Stays out of the screenshot's way. */
+ * what we're looking at. Shows for the first few seconds of a scene only, and
+ * scripts/framecheck.ts fails a scene whose chip would cover app content. */
 const LowerThird: React.FC<{ eyebrow: string; title: string; dur: number; top?: boolean }> = ({
   eyebrow,
   title,
@@ -113,8 +116,9 @@ const LowerThird: React.FC<{ eyebrow: string; title: string; dur: number; top?: 
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
 
-  const p = spring({ frame: frame - 12, fps, config: SMOOTH })
-  const out = interpolate(frame, [dur - 20, dur - 4], [0, 1], {
+  const [inAt, outAt] = chipWindow(dur, fps)
+  const p = spring({ frame: frame - inAt, fps, config: SMOOTH })
+  const out = interpolate(frame, [outAt - 16, outAt], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   })
@@ -125,8 +129,8 @@ const LowerThird: React.FC<{ eyebrow: string; title: string; dur: number; top?: 
     <div
       style={{
         position: 'absolute',
-        left: 74,
-        ...(top ? { top: 74 } : { bottom: 74 }),
+        left: CHIP_MARGIN,
+        ...(top ? { top: CHIP_MARGIN } : { bottom: CHIP_MARGIN }),
         display: 'flex',
         flexDirection: 'column',
         gap: 11,
@@ -134,26 +138,28 @@ const LowerThird: React.FC<{ eyebrow: string; title: string; dur: number; top?: 
         borderRadius: 18,
         background: C.glass,
         border: `1px solid ${C.rim}`,
-        boxShadow: '0 26px 70px rgba(0,0,0,0.62)',
-        backdropFilter: 'blur(10px)',
+        // A tight shadow only: a wide soft one smears grey across the white UI around the chip.
+        boxShadow: '0 6px 18px rgba(0,0,0,0.28)',
         opacity,
         transform: `translateX(${interpolate(p, [0, 1], [-46, 0]) - out * 70}px)`,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{ width: 26, height: 3, background: C.accent2, borderRadius: 2 }} />
-        <span
-          style={{
-            fontFamily: F.mono,
-            fontWeight: 700,
-            fontSize: 19,
-            letterSpacing: '0.3em',
-            color: C.accent,
-          }}
-        >
-          {eyebrow}
-        </span>
-      </div>
+      {eyebrow.trim() ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 26, height: 3, background: C.accent2, borderRadius: 2 }} />
+          <span
+            style={{
+              fontFamily: F.mono,
+              fontWeight: 700,
+              fontSize: 19,
+              letterSpacing: '0.3em',
+              color: C.accent,
+            }}
+          >
+            {eyebrow}
+          </span>
+        </div>
+      ) : null}
       <span
         style={{
           fontFamily: F.display,

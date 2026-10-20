@@ -25,8 +25,12 @@ export const WALKTHROUGH: Walkthrough = {
         // Shot 1 always opens with the scene — no trigger.
         { img: 'dashboard.png' },
         // Zoom pushes onto a focus target while the same capture stays up.
-        // focus = normalized (x, y) center + scale; measure real values with kit.point().
-        { img: 'dashboard.png', trigger: 'numbers across the top', move: 'zoom', focus: { x: 0.5, y: 0.22, scale: 1.3 } },
+        // Prefer a box: the region (normalized image coords) that must stay fully
+        // on screen. The engine fits it with padding and never zooms past
+        // MAX_ZOOM (1.4x), so labels and values can't fall off an edge. Read the
+        // box off the capture: the whole row/table/card, labels AND values.
+        { img: 'dashboard.png', trigger: 'numbers across the top', move: 'zoom', focus: { box: { x0: 0.2, y0: 0.08, x1: 0.97, y1: 0.4 } } },
+        // Point form: (x, y) center + scale (<= 1.4). framecheck scans its edges for cut text.
         { img: 'dashboard.png', trigger: 'left side', move: 'zoom', focus: { x: 0.09, y: 0.5, scale: 1.32 } },
       ],
     },

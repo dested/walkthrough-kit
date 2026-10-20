@@ -20,12 +20,12 @@ explicitly asks for that.
 
 ## 0. Version check (whenever `walkthroughs/` already exists)
 
-**This skill is kit version 3.** Read `walkthroughs/.kit-version` (a bare
+**This skill is kit version 4.** Read `walkthroughs/.kit-version` (a bare
 integer; file missing = version 1). If the repo's copy is older, upgrade it
 BEFORE any other work — old copies carry real bugs — by following
 `~/.claude/skills/walkthrough/references/upgrades.md` (ownership map, exact
 copy commands, per-version migration notes). If the repo's copy is NEWER than
-3, the installed skill is stale: reinstall it from the walkthrough-kit repo
+4, the installed skill is stale: reinstall it from the walkthrough-kit repo
 (`bun scripts/install-skill.ts`) and start over.
 
 ## 1. Scaffold (only if `walkthroughs/` doesn't exist at the repo root)
@@ -65,7 +65,9 @@ Fill `walkthroughs/walkthrough.config.json`:
   prints the account's voices AND writes `out/voices.html`, a picker page with
   audio players and click-to-copy ids. **Send that file to the user
   (SendUserFile) so they can actually listen**, then AskUserQuestion. TTS is
-  always **eleven_v3**, so recommend ONLY voices marked `v3-ready`. Pick the
+  **eleven_v4_turbo** (ElevenLabs v4 only, never v3 or older); the voice
+  list has no reliable v4 flag, so any voice is a candidate and the doctor
+  proves the pick with a real v4 Turbo ping. Pick the
   2–3 best fits for the chosen tone (sizzle → energetic/confident narration;
   demo → confident conversational; sales → warm/persuasive; tutorial →
   calm/measured), top pick first marked "(Recommended)", each option
@@ -86,7 +88,7 @@ cd walkthroughs && bun scripts/doctor.ts   # [--sign-in-path=/login]
 
 It verifies: baseUrl answers (and prints the page title so you can confirm
 it's the right server), every credential set signs in, the ElevenLabs key is
-live (with character usage), and the configured voice is v3-ready. Fix every
+live (with character usage), and the configured voice speaks with eleven_v4_turbo. Fix every
 FAIL before spawning the agent — it is the deterministic "ready to film"
 signal.
 - Capture login: if the app needs auth, put working credentials in
@@ -103,8 +105,13 @@ Spawn ONE agent with `model: "opus"` (Opus 5). Its prompt must include:
   - `~/.claude/skills/walkthrough/references/playbook.md` (the working loop)
   - `~/.claude/skills/walkthrough/references/writing.md` (VO + scene grammar)
   - `~/.claude/skills/walkthrough/references/capture.md` (capture kit API + framing tricks)
-- The definition of done: `out/<slug>.mp4` rendered, scene-midpoint stills
-  verified by actually reading them, capture FACTS consistent with the VO.
+- The definition of done: `bun scripts/framecheck.ts <slug>` clean,
+  `out/<slug>.mp4` rendered through `bun scripts/render.ts <slug>`, stills
+  at the start/middle/end of every zoomed shot verified by actually reading
+  them, capture FACTS consistent with the VO.
+- The hard rules (playbook.md "Never"): the VO never addresses a named
+  viewer; no zoom past 1.4x or crop of any label/value; nothing (vignette,
+  bloom, grain, badge, glow) drawn over the app's screens.
 
 While it runs, stay available to the user; relay progress when it completes.
 

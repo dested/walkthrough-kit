@@ -1,5 +1,5 @@
-// Voiceover alignment machinery for the eleven_v3 pipeline. v3 has no native
-// timestamp alignment, so: scribe_v1 word timestamps + an LCS word match
+// Voiceover alignment machinery for the TTS takes pipeline. We never rely on
+// TTS-native timestamps, so: scribe_v1 word timestamps + an LCS word match
 // produce a synthetic ElevenLabs-shaped character alignment — which is all
 // durations.ts needs for trigger cues and caption pages.
 import { readFileSync } from 'node:fs'

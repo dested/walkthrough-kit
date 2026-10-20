@@ -5,6 +5,10 @@ import { CONFIG } from '../theme'
 // Stand-in VO length until the durations run — keeps Studio usable on day one.
 const VO_FALLBACK = 6
 
+/** Composition size. Captures are 16:9 (2880x1620) so stills cover it exactly. */
+export const FRAME_W = 1920
+export const FRAME_H = 1080
+
 /** Consecutive scenes crossfade over this many frames. */
 export const OVERLAP = 14
 

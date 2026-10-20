@@ -1,5 +1,14 @@
-/** Normalized ken-burns target: (x, y) center in 0..1 of the image, zoom scale. */
-export type Focus = { x: number; y: number; scale: number }
+/** A region of a capture in normalized 0..1 image coords (x0,y0 top-left, x1,y1 bottom-right). */
+export type FocusBox = { x0: number; y0: number; x1: number; y1: number }
+
+/**
+ * Ken-burns target. Prefer `box`: the region that has to stay fully on screen.
+ * The engine picks the tightest zoom that fits it with padding, never past
+ * MAX_ZOOM, so the content you named can't be cropped. The point form
+ * (x, y center + scale) still works; its scale is clamped to MAX_ZOOM, and
+ * scripts/framecheck.ts checks its frame edges for cut text.
+ */
+export type Focus = { box: FocusBox } | { x: number; y: number; scale: number }
 
 export type Shot = {
   /** Still in public/<walkthrough>/captures/ (written by the capture run). */
@@ -15,7 +24,7 @@ export type Shot = {
   move?: 'cut' | 'click' | 'zoom'
   /** Key into capture-manifest.json points -> {x,y} where a click lands. */
   cursorKey?: string
-  /** Ken-burns target while this shot is live. Omit = whole frame, gentle drift. */
+  /** Ken-burns target while this shot is live (see Focus). Omit = whole frame, gentle drift. */
   focus?: Focus
   /** Tall (fullPage) capture: pan top->bottom across this shot's duration. */
   pan?: boolean

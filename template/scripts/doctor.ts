@@ -4,8 +4,8 @@
 //      YOUR dev server (a stale process squatting the port answers too).
 //   2. Every credential set in .env signs in (default + CAPTURE_EMAIL__ROLE sets).
 //   3. The ElevenLabs key is live (prints character usage for cost visibility).
-//   4. The configured voice exists on the account and is flagged v3-ready
-//      (TTS is always eleven_v3 in this kit).
+//   4. The configured voice exists on the account and speaks with a real
+//      eleven_v4_turbo ping (the voice list's model flags are unreliable).
 //
 // Run: bun scripts/doctor.ts [--sign-in-path=/sign-in]
 // Exit code = number of failed checks. Captions mode (no key) is a WARN, not a FAIL.
@@ -120,9 +120,17 @@ if (!KEY) {
         }
         const v = voices.find((x) => x.voice_id === config.voiceId)
         if (!v) fail(`voiceId ${config.voiceId} not on this account — run: bun scripts/voices.ts`)
-        else if (!(v.high_quality_base_model_ids ?? []).some((m) => m.startsWith('eleven_v3')))
-          fail(`voice "${v.name}" is not flagged v3-ready — TTS is always eleven_v3; pick another (bun scripts/voices.ts)`)
-        else pass(`voice "${v.name}" is v3-ready`)
+        else {
+          // TTS model is eleven_v4_turbo (scripts/voiceover.ts). The voice list's
+          // model flags are unreliable, so prove it with a two-word ping.
+          const ping = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${v.voice_id}?output_format=mp3_22050_32`, {
+            method: 'POST',
+            headers: { 'xi-api-key': KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: 'Ready.', model_id: 'eleven_v4_turbo' }),
+          })
+          if (ping.ok) pass(`voice "${v.name}" speaks with eleven_v4_turbo`)
+          else fail(`voice "${v.name}" failed an eleven_v4_turbo ping: ${ping.status} ${await ping.text()}`)
+        }
       }
     }
   } catch (e) {

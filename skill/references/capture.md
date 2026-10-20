@@ -36,6 +36,22 @@ To inject a resolved value, build the finder as a string:
 
 ## Framing rules (learned the hard way)
 
+- **Zoom is capped at 1.4x and must never crop a label or a value.** The
+  engine clamps every focus to `MAX_ZOOM` (1.4); `scripts/framecheck.ts`
+  fails any held frame whose edge slices text or a control. Prefer
+  `focus: { box: { x0, y0, x1, y1 } }` (normalized image coords): the engine
+  fits the whole box plus padding. Read the box off the PNG and make it the
+  whole row/table/card. Two side-by-side columns can't be split by a zoom
+  (the 1.4x frame still overlaps the neighbour), so zoom the pair or neither.
+  Capture tight instead of zooming hard: `kit.scrollTo(target, offset)` to
+  park the subject, so the shot needs little or no push.
+- **Nothing over the UI.** No vignette, bloom, grain, glow or badge layered
+  above a capture; the engine draws none. Don't fake atmosphere inside a
+  capture either: dark title cards rendered with `p.setContent` are the only
+  place for glows.
+- **`kit.point()` never records a zero-size element** (it warns and skips),
+  because a hidden span measured as (0,0) flew the cursor to the corner.
+  Point at the visible cell or control.
 - **The shot is the subject, not the page header.** Most app pages lead with a
   big heading that eats two-thirds of the frame. `kit.scrollTo(tabRow, 88)` to
   park the content under the sticky topbar before saving.

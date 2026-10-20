@@ -63,28 +63,7 @@ export const Backdrop: React.FC = () => {
   )
 }
 
-const NOISE =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
-
-/** Film grain + vignette, layered above everything. */
-export const Finish: React.FC = () => {
-  return (
-    <>
-      <AbsoluteFill
-        style={{
-          backgroundImage: NOISE,
-          backgroundRepeat: 'repeat',
-          opacity: 0.05,
-          mixBlendMode: 'overlay',
-          pointerEvents: 'none',
-        }}
-      />
-      <AbsoluteFill
-        style={{
-          background: 'radial-gradient(ellipse 78% 68% at 50% 46%, transparent 58%, rgba(0,0,0,0.42) 100%)',
-          pointerEvents: 'none',
-        }}
-      />
-    </>
-  )
-}
+// There is deliberately no film-level finish (grain, vignette, sheen) layered
+// over the composition. Anything above a screen capture greys white UI into a
+// blown-out center bloom; screens render pixel-clean, and atmosphere lives
+// only here, underneath them.

@@ -17,15 +17,16 @@ bun scripts/new-walkthrough.ts admin-portal "The admin portal"
 bun videos/admin-portal/capture.ts          # app must be running at config baseUrl
 
 # 3. Voiceover (drops to captions mode without ELEVENLABS_API_KEY; runs durations itself)
-bun scripts/voices.ts                       # prints voices + writes out/voices.html to audition; pick v3-ready
-bun scripts/voiceover.ts admin-portal       # always eleven_v3: N takes/scene, STT-scored, best kept
+bun scripts/voices.ts                       # prints voices + writes out/voices.html to audition (any voice; doctor pings it)
+bun scripts/voiceover.ts admin-portal       # eleven_v4_turbo: N takes/scene, STT-scored, best kept
 #   out/vo-takes/<slug>/report.json holds every take; --pick=<sceneId>:<takeN> to overrule
 bun scripts/music.ts admin-portal           # optional bed; re-run durations after
 bun scripts/durations.ts admin-portal       # standalone re-time (no re-TTS) after script/music edits
 
 # 4. Preview / render
 bun run dev                                 # Remotion Studio (port 7811)
-bunx remotion render admin-portal out/admin-portal.mp4
+bun scripts/framecheck.ts admin-portal      # framing preflight (zoom cap, cut text at edges, chip over UI, bad clicks)
+bun scripts/render.ts admin-portal          # framecheck, then render out/admin-portal.mp4; refuses on any FAIL
 ```
 
 ## Where things live
@@ -37,6 +38,11 @@ bunx remotion render admin-portal out/admin-portal.mp4
 - `src/engine/` — the film engine. You should not need to touch it.
 - `public/<slug>/` — captures, vo mp3s + alignment, timings.json, music.mp3.
 - `out/<slug>.mp4` — the render.
+
+Framing is enforced, not advised: the engine caps zoom at 1.4x (`MAX_ZOOM`), a
+`focus: { box }` is fitted so the whole box stays on screen, nothing film-level
+(grain, vignette, badge) is drawn over a capture, and `scripts/render.ts` won't
+render while `framecheck` reports a problem.
 
 Changing a VO line: edit `script.ts`, `bun scripts/voiceover.ts <slug> --only=<sceneId>`,
 `bun scripts/durations.ts <slug>`, re-render. The timeline adapts to the new audio.

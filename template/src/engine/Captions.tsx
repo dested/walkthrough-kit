@@ -39,8 +39,8 @@ export const Captions: React.FC<{ pages: CaptionPage[]; voStart: number }> = ({ 
         borderRadius: 16,
         background: C.glass,
         border: `1px solid ${C.rim}`,
-        boxShadow: '0 22px 60px rgba(0,0,0,0.55)',
-        backdropFilter: 'blur(10px)',
+        // Tight shadow, no backdrop blur: nothing may smear the UI around the chip.
+        boxShadow: '0 6px 18px rgba(0,0,0,0.28)',
         opacity,
       }}
     >

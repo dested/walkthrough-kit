@@ -10,9 +10,8 @@ export type Tone = {
   /** Hold after the VO ends, so the shot lands before we move on. */
   tailSeconds: number
   /**
-   * TTS is always eleven_v3, whose stability is discrete (0.0 creative /
-   * 0.5 natural / 1.0 robust). Expressive tones roll one Creative take for
-   * upside; measured tones stay Natural-only.
+   * TTS is eleven_v4_turbo. Natural stability (0.5) first; expressive tones
+   * roll one looser (0.3) take for upside; measured tones stay Natural-only.
    */
   expressive: boolean
   /** Music volume while the narrator is talking / between lines. */

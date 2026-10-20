@@ -9,7 +9,13 @@ touch frame numbers.
 - Scene 1 orients (what is this, what will we see). Last scene is the outro
   card (`card: 'outro'`, empty shots, `leadSeconds: 0.8, tailSeconds: 2.4`).
 - `eyebrow` groups scenes into chapters (THE FLOOR / BACK OFFICE / …) — use the
-  app's own top-level structure. Empty eyebrow = no lower-third chip.
+  app's own top-level structure. Empty eyebrow = no lower-third chip; a blank
+  (' ') eyebrow = a title-only chip. The chip shows for ~4s, and framecheck
+  fails a scene whose chip would sit over app content (most dense UI has no
+  empty corner, so chips are often off).
+- Never address a named viewer ("<Name>, this one's yours", "Hey <Name>"). Not
+  in the VO, the captions, the cards or the script's header comment. The film
+  gets forwarded; speak to whoever is watching.
 - Target runtime: sizzle 60–100s, demo 2–4 min, sales 90s–2.5 min, tutorial
   as long as it needs. ~150 words ≈ 1 minute.
 
@@ -22,8 +28,14 @@ touch frame numbers.
   push) onto a region of the SAME capture — supply `focus`; `click` when the VO
   says the action ("click the slot…") — supply `cursorKey` measured on the
   capture you're leaving. `pan: true` for tall fullPage captures.
-- Zoom focus values: prefer `kit.point()`-measured coordinates over guesses.
-  Scale 1.25–1.4 reads well; 1.55+ only for small UI like a docked panel.
+- Zoom focus: prefer `focus: { box: { x0, y0, x1, y1 } }`, read off the PNG
+  and sized to the whole row/table/card (labels AND values). Zoom never goes
+  past 1.4x (the engine clamps; framecheck fails the ask). On full-width app
+  UI a clean zoom is usually ~1.2x across the content column plus a vertical
+  move. A detail you can't isolate without slicing its neighbours stays
+  unzoomed: the VO points at it instead.
+- Unfocused shots hold the whole capture still (no drift), so they never trim
+  the nav rail or a right-aligned button.
 - Consecutive shots on the same image become one continuous camera move — use
   that: establish wide, then zoom to the detail as the VO names it.
 
@@ -37,9 +49,10 @@ touch frame numbers.
   there" — those phrases are also your best triggers.
 - No marketing filler ("seamless", "powerful", "robust"). No feature-list
   monotone: vary rhythm, ask a question occasionally, answer it.
-- TTS is eleven_v3, which honors bracketed audio tags in the vo text —
-  `[sighs]`, `[laughs]`, `[whispers]`, `[excited]`. Use sparingly (a sales
-  film might earn one or two; a demo usually none). The pipeline strips tags
+- TTS is eleven_v4_turbo. Bracketed audio tags (`[sighs]`, `[laughs]`,
+  `[whispers]`) were a v3 feature; don't count on v4 Turbo performing them.
+  If you use one, check the take report that it wasn't read aloud, and keep
+  it rare (a demo usually needs none). The pipeline strips tags
   from captions and duration estimates automatically. Never put a tag inside
   a trigger phrase, and never place a trigger's words straddling a tag.
 

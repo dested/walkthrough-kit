@@ -47,7 +47,7 @@ async function measure(file: string): Promise<number> {
   return Number((await input.computeDuration()).toFixed(3))
 }
 
-/** eleven_v3 audio tags like [sighs] are spoken direction, not words — they
+/** ElevenLabs audio tags like [sighs] are spoken direction, not words — they
  * never appear in captions and don't count toward duration estimates. */
 const stripTags = (s: string) => s.replace(/\[[^\]]*\]/g, ' ').replace(/\s{2,}/g, ' ')
 

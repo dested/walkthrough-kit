@@ -1,5 +1,15 @@
 # Updates
 
+- 2026-10-20 — Kit v4 (recut of a field film the owner sent back): no
+  vignette/grain/badge over the UI (Finish + BrandBadge removed, chip shadow
+  tightened, chip ~4s, blank eyebrow = title-only chip); zoom capped at 1.4x
+  in the engine, `focus: { box }` fitted whole, unfocused shots hold at 1.0x;
+  new scripts/framecheck.ts (pngjs ink scan along every crop line of every
+  held frame + chip/click-point checks + clean-focus suggestions) and
+  scripts/render.ts (refuses on FAIL); TTS migrated to eleven_v4_turbo
+  (voiceover/doctor/voices); kit.point skips zero-size hits; skill docs gain
+  playbook "Never" rules (named viewer, crop, overlays) + v4 migration notes.
+
 - 2026-08-12 — Kit versioning: template/.kit-version (integer, currently 3),
   SKILL.md step-0 version check routes stale scaffolds through the new
   skill/references/upgrades.md (ownership map + copy procedure + per-version

@@ -240,6 +240,8 @@ export async function createCapture(slug: string, options: CaptureOptions = {}) 
         const el = new Function(`return (${fnBody})()`)() as Element | null | undefined
         if (!el) return null
         const r = el.getBoundingClientRect()
+        // A zero-size hit (hidden span, collapsed wrapper) would record (0,0) and fly the cursor to the corner.
+        if (r.width === 0 && r.height === 0) return null
         const cx = r.left + r.width / 2
         const cy = r.top + r.height / 2
         if (sp === 'page') {
@@ -256,7 +258,7 @@ export async function createCapture(slug: string, options: CaptureOptions = {}) 
       TALL_CAP,
     )
     if (!box) {
-      console.warn(`  ! point "${key}" — element not found`)
+      console.warn(`  ! point "${key}" — element not found (or zero-size)`)
       return null
     }
     points[key] = { img, x: Number(box.x.toFixed(4)), y: Number(box.y.toFixed(4)) }

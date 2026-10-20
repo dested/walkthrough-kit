@@ -3,11 +3,8 @@ import { Composition, type CalculateMetadataFunction } from 'remotion'
 import { WalkthroughFilm, type FilmProps } from './engine/Film'
 import { EMPTY_MANIFEST, EMPTY_TIMINGS, type Walkthrough } from './engine/types'
 import { loadJson } from './engine/data'
-import { totalFrames } from './engine/timeline'
+import { FRAME_H, FRAME_W, totalFrames } from './engine/timeline'
 import { WALKTHROUGHS } from './videos'
-
-const WIDTH = 1920
-const HEIGHT = 1080
 
 /**
  * Duration adapts to the measured (or estimated) VO lengths in
@@ -37,8 +34,8 @@ export const RemotionRoot: React.FC = () => (
         component={WalkthroughFilm}
         durationInFrames={300}
         fps={wt.fps ?? 30}
-        width={WIDTH}
-        height={HEIGHT}
+        width={FRAME_W}
+        height={FRAME_H}
         defaultProps={{ walkthrough: wt, timings: EMPTY_TIMINGS, manifest: EMPTY_MANIFEST }}
         calculateMetadata={metadataFor(wt)}
       />

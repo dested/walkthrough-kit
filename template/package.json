@@ -9,11 +9,13 @@
     "@remotion/google-fonts": "4.0.482",
     "@remotion/media": "4.0.482",
     "mediabunny": "^1.49.0",
+    "pngjs": "7.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "4.0.482"
   },
   "devDependencies": {
+    "@types/pngjs": "6.0.5",
     "@types/react": "19.2.7",
     "@types/web": "0.0.166",
     "puppeteer": "^25.2.1",
@@ -28,7 +30,8 @@
     "durations": "bun scripts/durations.ts",
     "music": "bun scripts/music.ts",
     "typecheck": "tsc --noEmit",
-    "render": "remotion render"
+    "framecheck": "bun scripts/framecheck.ts",
+    "render": "bun scripts/render.ts"
   },
   "sideEffects": [
     "*.css"
