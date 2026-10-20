@@ -9,6 +9,10 @@
   scripts/render.ts (refuses on FAIL); TTS migrated to eleven_v4_turbo
   (voiceover/doctor/voices); kit.point skips zero-size hits; skill docs gain
   playbook "Never" rules (named viewer, crop, overlays) + v4 migration notes.
+- 2026-10-20 — Kit v4 pronunciation: `say` maps (walkthrough + scene,
+  written word → respelling) feed only the TTS text (align.ts spokenText);
+  voiceover logs what scribe heard at each respelled word; report.json
+  merges across --only runs. Playbook rule: check brand names before TTS.
 
 - 2026-08-12 — Kit versioning: template/.kit-version (integer, currently 3),
   SKILL.md step-0 version check routes stale scaffolds through the new

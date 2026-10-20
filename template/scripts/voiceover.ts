@@ -13,15 +13,20 @@
 // human can overrule the machine per scene:
 //   bun scripts/voiceover.ts <slug> --pick=<sceneId>:<takeN>
 //
+// Pronunciation: `say` maps on the film and on scenes (written word ->
+// respelling) change only what the voice reads (align.ts spokenText). Takes
+// are still scored against the written vo, and for every respelled word the
+// log prints what scribe heard there, so a bad read shows up in the run.
+//
 // Run: bun scripts/voiceover.ts <slug> [--takes=2] [--force] [--only=<sceneId>] [--pick=<id>:<n>]
 // Then: bun scripts/durations.ts <slug>
 import { ALL_FORMATS, FilePathSource, Input } from 'mediabunny'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Scene } from '../src/engine/types'
-import { matchWords, scriptWords, sttWords, syntheticAlign, type ScriptWord, type SttWord } from './align'
+import { matchWords, norm, scriptWords, spokenText, sttWords, syntheticAlign, type ScriptWord, type SttWord } from './align'
 import { spawnSync } from 'node:child_process'
-import { ROOT, argFlag, argValue, elevenKey, fetchRetry, findWalkthrough, readConfig, toneFor } from './lib'
+import { ROOT, argFlag, argValue, elevenKey, fetchRetry, findWalkthrough, readConfig, sayFor, toneFor } from './lib'
 
 const wt = findWalkthrough(process.argv[2])
 const config = readConfig()
@@ -50,6 +55,34 @@ const ONLY = argValue('only')
 const PICK = argValue('pick')
 
 const VOICED = wt.scenes.filter((s) => s.vo)
+/** What the voice reads for a scene (respellings applied). */
+const spoken = (scene: Scene): string => spokenText(scene.vo, sayFor(wt, scene))
+
+/**
+ * For each respelled word in the scene, what scribe transcribed at that spot
+ * ("Gusto: heard 'gusto'"). Unmatched = the read drifted there; listen to it.
+ */
+function heardAt(scene: Scene, s: Score): string[] {
+  const out: string[] = []
+  const pairOf = new Map(s.pairs)
+  for (const word of Object.keys(sayFor(wt, scene))) {
+    const key = norm(word)
+    s.sWords.forEach((sw, i) => {
+      if (sw.w !== key) return
+      const j = pairOf.get(i)
+      if (j !== undefined) {
+        out.push(`${word}: heard '${s.tWords[j].w}'`)
+        return
+      }
+      // Unmatched: show the transcript between the neighbouring anchors.
+      const before = s.pairs.filter(([a]) => a < i).pop()?.[1] ?? -1
+      const after = s.pairs.find(([a]) => a > i)?.[1] ?? s.tWords.length
+      const gap = s.tWords.slice(before + 1, after).map((t) => t.w).join(' ')
+      out.push(`${word}: NOT MATCHED, heard '${gap}'`)
+    })
+  }
+  return out
+}
 
 async function measure(file: string): Promise<number> {
   const input = new Input({ formats: ALL_FORMATS, source: new FilePathSource(file) })
@@ -126,11 +159,11 @@ if (PICK) {
 
 // ── main: generate, score, pick ─────────────────────────────────────────────
 // TTS bills per character, per take — surface the spend up front.
-const totalChars = VOICED.reduce((a, s) => a + s.vo.length, 0)
+const totalChars = VOICED.reduce((a, s) => a + spoken(s).length, 0)
 console.log(
   `voice ${VOICE_ID}, model ${TTS_MODEL}, tone ${tone.id}, ${TAKES} take(s)/scene — ${totalChars} chars/pass, ~${totalChars * TAKES} chars total`,
 )
-type TakeRow = { t: number; stability: number; dur: number; pct: number; ws: number; issues: string[] }
+type TakeRow = { t: number; stability: number; dur: number; pct: number; ws: number; issues: string[]; heard: string[] }
 const report: { scene: string; kept: number; takes: TakeRow[] }[] = []
 
 for (const scene of VOICED) {
@@ -145,8 +178,8 @@ for (const scene of VOICED) {
   const takes: (Score & { t: number; stability: number; file: string })[] = []
   for (let t = 0; t < TAKES; t++) {
     const stability = stabilityFor(t)
-    process.stdout.write(`${scene.id} (${scene.vo.length} chars) take ${t} (${stability === 0 ? 'creative' : 'natural'}) … `)
-    const buf = await tts(scene.vo, stability)
+    process.stdout.write(`${scene.id} (${spoken(scene).length} chars) take ${t} (${stability === 0 ? 'creative' : 'natural'}) … `)
+    const buf = await tts(spoken(scene), stability)
     const file = join(dir, `take-${t}.mp3`)
     writeFileSync(file, buf)
     const s = await scoreTake(scene, file)
@@ -154,6 +187,7 @@ for (const scene of VOICED) {
     console.log(
       `${s.dur.toFixed(1)}s  match ${(s.pct * 100).toFixed(0)}%  ${s.ws.toFixed(2)} w/s${s.issues.length ? '  [' + s.issues.join(', ') + ']' : ''}`,
     )
+    for (const h of heardAt(scene, s)) console.log(`    say ${h}`)
   }
 
   // Hard-fail guards first, then accuracy, then pace closest to the takes' own
@@ -173,19 +207,28 @@ for (const scene of VOICED) {
   report.push({
     scene: scene.id,
     kept: win.t,
-    takes: takes.map(({ t, stability, dur, pct, ws, issues }) => ({
+    takes: takes.map(({ t, stability, dur, pct, ws, issues, ...s }) => ({
       t,
       stability,
       dur,
       pct: Number((pct * 100).toFixed(0)),
       ws: Number(ws.toFixed(2)),
       issues,
+      heard: heardAt(scene, { dur, pct, ws, issues, ...s }),
     })),
   })
 }
 
 if (report.length) {
-  writeFileSync(join(TAKES_DIR, 'report.json'), JSON.stringify(report, null, 2))
+  // Merge: an --only run replaces its own scene's row and keeps the others.
+  const file = join(TAKES_DIR, 'report.json')
+  const prior: typeof report = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : []
+  const fresh = new Set(report.map((r) => r.scene))
+  const order = new Map(VOICED.map((s, i) => [s.id, i]))
+  const merged = [...prior.filter((r) => !fresh.has(r.scene)), ...report].sort(
+    (a, b) => (order.get(a.scene) ?? 0) - (order.get(b.scene) ?? 0),
+  )
+  writeFileSync(file, JSON.stringify(merged, null, 2))
   console.log(`\nkept ${report.map((r) => `${r.scene}:${r.kept}`).join(' ')}`)
   console.log(`takes + report in out/vo-takes/${wt.id}/ — overrule with --pick=<sceneId>:<takeN>`)
 }

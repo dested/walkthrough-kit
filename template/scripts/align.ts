@@ -15,6 +15,20 @@ export const norm = (s: string): string =>
     .replace(/\s+/g, ' ')
     .trim()
 
+/**
+ * The text the voice actually reads: `vo` with each `say` key (whole word,
+ * case-insensitive) swapped for its respelling. Captions and triggers never
+ * see this; they keep the written vo.
+ */
+export function spokenText(vo: string, say: Record<string, string>): string {
+  let out = vo
+  for (const [word, spoken] of Object.entries(say)) {
+    const esc = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    out = out.replace(new RegExp(`(?<![\\w'-])${esc}(?![\\w-])`, 'gi'), () => spoken)
+  }
+  return out
+}
+
 /** A script word that remembers its character span in the VO text. */
 export type ScriptWord = { w: string; from: number; to: number }
 /** A transcribed word with clip-second timestamps. */

@@ -67,3 +67,12 @@
 - **Films never address a named viewer.** No "<Name>, this one's yours":
   the film gets forwarded and the owner won't ship one that talks to one
   person. Rule lives in playbook.md "Never" and writing.md.
+- **Pronunciation is a respelling map, not SSML or a dictionary.** `say`
+  on the walkthrough (film-wide) and on a scene (override) maps a written
+  word to what the voice reads (`Gusto` → `Gust-oh`). Only the TTS text
+  changes; captions, trigger cues and take scoring stay on the written `vo`,
+  so the screen still reads the brand name. Chosen over ElevenLabs
+  pronunciation dictionaries (account state outside the repo; phoneme rules
+  aren't supported on every model) and inline respellings in `vo` (they leak
+  into captions). Scribe normalizes near-misses to the dictionary word, so its
+  "heard" line catches a garbled read, not a wrong stress: a human listens.

@@ -66,6 +66,11 @@ installed skill is stale — from the walkthrough-kit repo run
 - **TTS is eleven_v4_turbo** (`voiceover.ts`); `doctor.ts` proves the voice
   with a real v4 Turbo ping; `voices.ts` drops the unreliable `v3-ready`
   flag and lists every voice.
+- **Pronunciation maps.** `say` on the walkthrough and on a scene
+  (written word → respelling) changes what the voice reads, never the
+  captions or triggers. Each take logs what scribe heard at every respelled
+  word. `out/vo-takes/<slug>/report.json` now merges across `--only` runs
+  instead of keeping only the last scene.
 - `kit.point()` refuses zero-size elements (a hidden span recorded (0,0)
   and flew the cursor to the corner).
 - `FRAME_W` / `FRAME_H` live in `src/engine/timeline.ts`; `Root.tsx` uses them.
@@ -83,6 +88,8 @@ installed skill is stale — from the walkthrough-kit repo run
      the voice is consistent; run the doctor first.
   4. Remove any address to a named viewer from VO/cards and re-TTS those
      scenes (playbook.md "Never").
+  4b. List the brand names in each VO; add a `say` entry for any the voice
+     reads wrong and re-TTS those scenes with `--only`.
   5. Render with `bun scripts/render.ts <slug>`; read a 1-frame-per-4s contact
      sheet plus start/mid/end stills of each zoomed shot.
 

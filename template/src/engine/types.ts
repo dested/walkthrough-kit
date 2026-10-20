@@ -36,6 +36,13 @@ export type Scene = {
   eyebrow: string
   title: string
   vo: string
+  /**
+   * Pronunciation overrides for this scene's TTS, merged over the film's
+   * `say`: written word -> how to spell it for the voice ("Gusto" ->
+   * "Gust-oh"). Only the audio changes; captions, triggers and scoring keep
+   * the written `vo`.
+   */
+  say?: Record<string, string>
   shots: Shot[]
   /** 'outro' renders the brand card instead of shots. */
   card?: 'outro'
@@ -54,6 +61,12 @@ export type Walkthrough = {
   /** Overrides walkthrough.config.json. */
   tone?: ToneId
   voiceId?: string
+  /**
+   * Film-wide pronunciation map for TTS: written word -> spoken respelling
+   * (brand names the voice gets wrong). Whole-word, case-insensitive. Scenes
+   * can add or override entries with their own `say`.
+   */
+  say?: Record<string, string>
   /** Closing card copy. Defaults: title + productUrl. */
   outro?: { headline: string; sub?: string }
   fps?: number

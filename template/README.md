@@ -47,5 +47,10 @@ render while `framecheck` reports a problem.
 Changing a VO line: edit `script.ts`, `bun scripts/voiceover.ts <slug> --only=<sceneId>`,
 `bun scripts/durations.ts <slug>`, re-render. The timeline adapts to the new audio.
 
+Mispronounced name: add `say: { Gusto: 'Gust-oh' }` to the walkthrough (or one
+scene), then re-TTS each scene that says it with `--only=<sceneId>`. Only the
+audio changes; captions and triggers keep the written word. The run prints
+`say Gusto: heard '…'` for every respelled word.
+
 Tones: `sizzle` (fast demo) · `demo` (confident walkthrough) · `sales` (warm pitch) ·
 `tutorial` (calm explainer). Set in config or per-walkthrough (`tone:` in script.ts).

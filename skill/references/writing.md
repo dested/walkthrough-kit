@@ -56,6 +56,16 @@ touch frame numbers.
   from captions and duration estimates automatically. Never put a tag inside
   a trigger phrase, and never place a trigger's words straddling a tag.
 
+## Pronunciation
+- The voice reads `vo` as written, and it guesses at brand names. Keep the
+  written name in `vo` (captions show it) and put the respelling in `say`:
+  `say: { Gusto: 'Gust-oh' }` on the walkthrough applies film-wide, a scene's
+  own `say` overrides. Keys match whole words, case-insensitive,
+  possessives included ("Gusto's").
+- Respell with plain English chunks the voice can't misread: `Gust-oh`,
+  `Kwik-books`, `Coterie` → `Coh-tuh-ree`. Never capitalized letters
+  (`GUST-oh` may be spelled out).
+
 ## Tone deltas
 - **sizzle**: clipped fragments allowed. One idea per breath. Hard cuts, more
   zooms, fewer pans. Open with the strongest screen, not a welcome.

@@ -111,7 +111,9 @@ Spawn ONE agent with `model: "opus"` (Opus 5). Its prompt must include:
   them, capture FACTS consistent with the VO.
 - The hard rules (playbook.md "Never"): the VO never addresses a named
   viewer; no zoom past 1.4x or crop of any label/value; nothing (vignette,
-  bloom, grain, badge, glow) drawn over the app's screens.
+  bloom, grain, badge, glow) drawn over the app's screens; every brand name
+  in the VO checked and, where the voice gets it wrong, respelled via `say`
+  (captions keep the real name). The report names the respelled words.
 
 While it runs, stay available to the user; relay progress when it completes.
 

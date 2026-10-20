@@ -25,7 +25,8 @@ template/                    copied into a target repo as walkthroughs/
   scripts/                   doctor.ts (preflight: server/creds/key/voice v4 ping), voices.ts (voice
                              listing + out/voices.html audition page), voiceover.ts
                              (eleven_v4_turbo takes → scribe_v1 score → promote + synthetic align,
-                             chains durations), align.ts (LCS/STT alignment), durations.ts (timings.json:
+                             chains durations; `say` respellings feed TTS only), align.ts (LCS/STT
+                             alignment, spokenText), durations.ts (timings.json:
                              measured or estimated durations, trigger cues, caption pages),
                              music.ts (ElevenLabs music bed), new-walkthrough.ts (scaffold + register),
                              framecheck.ts (framing gate: zoom cap, cut text at crop lines via

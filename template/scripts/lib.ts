@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { ToneId, Walkthrough } from '../src/engine/types'
+import type { Scene, ToneId, Walkthrough } from '../src/engine/types'
 import { toneById, type Tone } from '../src/engine/tones'
 import { WALKTHROUGHS } from '../src/videos'
 
@@ -41,6 +41,11 @@ export function findWalkthrough(slug: string | undefined): Walkthrough {
   const wt = WALKTHROUGHS.find((w) => w.id === slug)
   if (!wt) throw new Error(`walkthrough "${slug}" not in src/videos.ts (have: ${WALKTHROUGHS.map((w) => w.id).join(', ')})`)
   return wt
+}
+
+/** A scene's pronunciation map: the film's `say`, then the scene's own on top. */
+export function sayFor(wt: Walkthrough, scene: Scene): Record<string, string> {
+  return { ...(wt.say ?? {}), ...(scene.say ?? {}) }
 }
 
 export function toneFor(wt: Walkthrough): Tone {

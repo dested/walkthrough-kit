@@ -28,6 +28,13 @@ Read first: `walkthroughs/README.md`, `videos/example/script.ts`,
   sheen, gradient or badge above a capture; the engine ships none and you
   don't add one. UI renders pixel-clean. Atmosphere lives only on the dark
   backdrop behind title cards.
+- **Never ship a brand name the voice says wrong.** Before TTS, list every
+  product, company and person name in the VO (the app's own name, its
+  integrations: Gusto, QuickBooks, Stripe…). Look up how each is said. If the
+  voice gets one wrong, or it's ambiguous, add it to the walkthrough's
+  `say` map (`say: { Gusto: 'Gust-oh' }`) and re-TTS every scene that says
+  it. Captions keep the written name. Tell the user which names you
+  respelled so they can listen: scribe can't hear stress.
 - **Never render around a failing framecheck.** `bun scripts/render.ts`
   refuses while `bun scripts/framecheck.ts <slug>` reports anything. Fix the
   framing (it prints a clean nearby `focus` for each sliced shot), the
@@ -70,6 +77,9 @@ Read first: `walkthroughs/README.md`, `videos/example/script.ts`,
   weird pace), regenerate with `--force --only=<sceneId>` or promote a
   different existing take with `--pick=<sceneId>:<takeN>`. It runs durations
   automatically at the end.
+- Brand names: before the first TTS pass, put every name you're unsure of in
+  `say` (see "Never"). Each take logs `say <word>: heard '…'`; a NOT
+  MATCHED line means the read went wrong there. Re-TTS just those scenes.
 - In the durations output, fix any `TRIGGER NOT FOUND` by making the trigger an
   exact substring of the vo, then re-run (`bun scripts/durations.ts <slug>`
   standalone re-times without re-TTS). Unresolved triggers degrade to even
