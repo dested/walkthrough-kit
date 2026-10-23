@@ -9,7 +9,8 @@
 // Partial re-runs: ONLY=stage1,stage2 or SKIP=stage3 (comma-separated stage
 // names, matched against the name passed to `stage()`).
 import puppeteer, { type Browser, type Page } from 'puppeteer'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -275,6 +276,23 @@ export async function createCapture(slug: string, options: CaptureOptions = {}) 
       return true
     }, finderBody(find))
 
+  /**
+   * A real mouse click at the found element's centre. Use it where the click must carry
+   * user activation (window.open, downloads, clipboard): Chrome blocks those after a
+   * scripted `el.click()`.
+   */
+  const clickTrusted = async (find: Finder, p: Page = page) => {
+    const box = await p.evaluate((fnBody: string) => {
+      const el = new Function(`return (${fnBody})()`)() as HTMLElement | null | undefined
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+    }, finderBody(find))
+    if (!box) return false
+    await p.mouse.click(box.x, box.y)
+    return true
+  }
+
   /** Pull an element's text (trimmed, single-spaced) — for facts. */
   const readText = (find: Finder, p: Page = page) =>
     p.evaluate((fnBody: string) => {
@@ -356,6 +374,13 @@ export async function createCapture(slug: string, options: CaptureOptions = {}) 
     } finally {
       await recorder.stop()
     }
+    // Puppeteer's webm has no duration header (Remotion's ffprobe needs one) and can come
+    // out empty; remux it and fail here rather than in the render.
+    if (!existsSync(file) || statSync(file).size === 0) throw new Error(`recordClip: ${name} came out empty; re-run this stage`)
+    const fixed = `${file}.remux.webm`
+    const ff = spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', file, '-c', 'copy', fixed], { encoding: 'utf8' })
+    if (ff.status !== 0) throw new Error(`recordClip: ${name} is unreadable (${ff.stderr.trim()}); re-run this stage`)
+    renameSync(fixed, file)
     console.log(`  saved ${name}`)
   }
 
@@ -398,6 +423,7 @@ export async function createCapture(slug: string, options: CaptureOptions = {}) 
     saveTall,
     point,
     clickFound,
+    clickTrusted,
     readText,
     scrollTo,
     signIn,

@@ -1,5 +1,10 @@
 # Updates
 
+- 2026-10-23 — Kit v5: films rendered blown out (yuvj420p full range, players
+  clip whites) → `Config.setColorSpace('bt709')` + render.ts fails on a
+  full-range mp4; `kit.clickTrusted` for clicks needing user activation;
+  `recordClip` remuxes (duration header) and fails on empty clips. Found on the
+  clever-harness fix film.
 - 2026-10-20 — Kit v4 (recut of a field film the owner sent back): no
   vignette/grain/badge over the UI (Finish + BrandBadge removed, chip shadow
   tightened, chip ~4s, blank eyebrow = title-only chip); zoom capped at 1.4x

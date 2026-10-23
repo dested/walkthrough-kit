@@ -44,7 +44,23 @@ installed skill is stale — from the walkthrough-kit repo run
 
 ## Changelog + migration notes
 
-### v4 (current)
+### v5 (current)
+- **Films no longer play blown out.** `remotion.config.ts` sets
+  `Config.setColorSpace('bt709')`. Before, the JPEG frames' full-range YUV went
+  into the mp4 as `yuvj420p` (pc range, bt470bg); players read H.264 as limited
+  range, so whites clipped, light greys and card borders vanished and the UI
+  looked washed out. `scripts/render.ts` now ffprobes the output and fails on a
+  full-range file.
+- **`kit.clickTrusted(finder)`**: a real mouse click at the element's centre.
+  Use it where the click must carry user activation (`window.open`, downloads,
+  clipboard); Chrome blocks those after `clickFound`'s scripted `el.click()`.
+- **`recordClip` remuxes and checks its webm.** Puppeteer's screencast has no
+  duration header (Remotion's ffprobe chokes) and can come out empty; the clip
+  is remuxed with ffmpeg and an empty or unreadable one fails the capture.
+- Migration: overwrite the upstream-owned files as above, then re-render every
+  film you still ship (old mp4s stay blown out). Captures don't need redoing.
+
+### v4
 - **Nothing drawn over the screens.** `Finish` (film grain + radial vignette
   layered above everything, which read as a blown-out center bloom on white
   UI) is gone, and so is the top-right brand badge that covered UI. The title

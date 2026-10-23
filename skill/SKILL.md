@@ -20,7 +20,7 @@ explicitly asks for that.
 
 ## 0. Version check (whenever `walkthroughs/` already exists)
 
-**This skill is kit version 4.** Read `walkthroughs/.kit-version` (a bare
+**This skill is kit version 5.** Read `walkthroughs/.kit-version` (a bare
 integer; file missing = version 1). If the repo's copy is older, upgrade it
 BEFORE any other work — old copies carry real bugs — by following
 `~/.claude/skills/walkthrough/references/upgrades.md` (ownership map, exact
